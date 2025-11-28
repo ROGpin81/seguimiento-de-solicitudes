@@ -11,13 +11,17 @@ interface NuevoTicketPayload {
   responsable: string
 }
 
+// Lee tickets guardados desde localStorage
 function cargarTicketsDesdeLocalStorage(): Ticket[] {
   if (typeof window === 'undefined') return []
+
   try {
     const data = localStorage.getItem(STORAGE_KEY)
     if (!data) return []
+
     const parsed = JSON.parse(data) as Ticket[]
     if (!Array.isArray(parsed)) return []
+
     return parsed
   } catch (error) {
     console.error('Error al leer tickets desde localStorage', error)
@@ -26,17 +30,14 @@ function cargarTicketsDesdeLocalStorage(): Ticket[] {
 }
 
 export function useTickets() {
-  const [tickets, setTickets] = useState<Ticket[]>([])
-
-  // Cargar tickets iniciales desde localStorage
-  useEffect(() => {
-    const iniciales = cargarTicketsDesdeLocalStorage()
-    setTickets(iniciales)
-  }, [])
+  const [tickets, setTickets] = useState<Ticket[]>(() =>
+    cargarTicketsDesdeLocalStorage(),
+  )
 
   // Guardar cambios en localStorage cada vez que cambie la lista
   useEffect(() => {
     if (typeof window === 'undefined') return
+
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(tickets))
     } catch (error) {
@@ -73,7 +74,7 @@ export function useTickets() {
       return
     }
 
-    // 1) No permitir volver a "Abierto" desde otro estado
+    // No permitir volver a "Abierto" desde otro estado
     if (nuevoEstado === 'Abierto' && ticketActual.estado !== 'Abierto') {
       const mensajesPorEstado: Record<EstadoTicket, string> = {
         Abierto: 'Ticket Abierto',
@@ -91,7 +92,7 @@ export function useTickets() {
       return
     }
 
-    // 2) Actualizar lista de tickets
+    // Actualizar lista de tickets
     setTickets(prev =>
       prev.map(ticket =>
         ticket.id === id
@@ -104,7 +105,7 @@ export function useTickets() {
       ),
     )
 
-    // 3) Mensajes según el nuevo estado
+    // Mensajes según el nuevo estado
     let mensaje = ''
 
     switch (nuevoEstado) {
